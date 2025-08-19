@@ -106,4 +106,4 @@ python main_tts_batch.py input/en --lang en-US --speed 0.9
 * Jika folder `output/en` atau `output/id` belum ada, akan dibuat otomatis.
 
 ## Author
-Muhammad Ricky Rizaldi
+[Muhammad Ricky Rizaldi](https://www.linkedin.com/in/mrickyr)
