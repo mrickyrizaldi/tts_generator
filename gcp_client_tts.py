@@ -8,10 +8,23 @@ from pathlib import Path
 import soundfile as sf
 from google.cloud import texttospeech
 from google.api_core.exceptions import GoogleAPIError
-from utils.path_helper import get_resource_path
 
 
-# KONFIGURASI KREDENSIAL & CLIENT
+# === HELPER: Resource Path ===
+def get_resource_path(*relative_path_parts):
+    """
+    Mengembalikan path absolut ke resource berdasarkan root project.
+    
+    Usage:
+        font_path = get_resource_path('fonts', 'InterDisplay-Regular.ttf')
+        model_path = get_resource_path('models', 'translator_model.pt')
+        audio_path = get_resource_path('audio', 'beep.wav')
+    """
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    return os.path.join(root_dir, *relative_path_parts)
+
+
+# === KONFIGURASI KREDENSIAL & CLIENT ===
 CREDENTIALS_DIR = Path(get_resource_path("gcp_credential"))
 
 SERVICE_ACCOUNT_FILE = next(CREDENTIALS_DIR.glob("*.json"), None)
@@ -28,16 +41,10 @@ if not PROJECT_ID:
 tts_client = texttospeech.TextToSpeechClient()
 
 
-# FUNGSI UTAMA TTS
+# === FUNGSI UTAMA TTS ===
 def gcp_text_to_speech(text, language_code="id-ID", voice_name=None, speaking_rate=1.0):
     """
     Mengubah teks menjadi audio menggunakan Google Cloud Text-to-Speech.
-
-    Args:
-        text (str): Teks yang akan diubah menjadi audio.
-        language_code (str): Kode bahasa suara.
-        voice_name (str): Nama suara TTS.
-        speaking_rate (float): Kecepatan bicara.
 
     Returns:
         bytes: Data audio hasil TTS dalam format LINEAR16.
@@ -68,7 +75,7 @@ def gcp_text_to_speech(text, language_code="id-ID", voice_name=None, speaking_ra
         return b""
 
 
-# HELPER UNTUK SIMPAN KE FILE
+# === HELPER UNTUK SIMPAN KE FILE ===
 def save_tts_to_file(
     text: str,
     output_file: str,
@@ -78,13 +85,6 @@ def save_tts_to_file(
 ):
     """
     Konversi teks ke audio menggunakan Google Cloud TTS dan simpan ke file .wav
-
-    Args:
-        text (str): Teks input
-        output_file (str): Nama file output (contoh "hasil.wav")
-        language_code (str): Kode bahasa (contoh "id-ID" atau "en-US")
-        voice_name (str): Nama voice model TTS
-        speaking_rate (float): Kecepatan bicara
     """
     audio_content = gcp_text_to_speech(
         text=text,
@@ -129,7 +129,7 @@ def save_tts_id(text: str, output_file: str, speed: float = 1.0):
     )
 
 
-# Pemanggilan via CLI contoh
+# Contoh Pemanggilan CLI
 if __name__ == "__main__":
     teks = "Halo dunia, ini adalah contoh TTS Google Cloud dengan suara Despina."
     save_tts_id(teks, "contoh_id.wav")
