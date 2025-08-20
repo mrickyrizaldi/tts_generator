@@ -10,27 +10,24 @@ from google.cloud import texttospeech
 from google.api_core.exceptions import GoogleAPIError
 
 
-# === HELPER: Resource Path ===
-def get_resource_path(*relative_path_parts):
-    """
-    Mengembalikan path absolut ke resource berdasarkan root project.
-    
-    Usage:
-        font_path = get_resource_path('fonts', 'InterDisplay-Regular.ttf')
-        model_path = get_resource_path('models', 'translator_model.pt')
-        audio_path = get_resource_path('audio', 'beep.wav')
-    """
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    return os.path.join(root_dir, *relative_path_parts)
-
-
 # === KONFIGURASI KREDENSIAL & CLIENT ===
-CREDENTIALS_DIR = Path(get_resource_path("gcp_credential"))
+# 1. Cek dari environment variable dulu
+service_account_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
-SERVICE_ACCOUNT_FILE = next(CREDENTIALS_DIR.glob("*.json"), None)
-if not SERVICE_ACCOUNT_FILE:
-    raise FileNotFoundError(f"Service Account JSON tidak ditemukan di: {CREDENTIALS_DIR}")
+if service_account_file and Path(service_account_file).exists():
+    SERVICE_ACCOUNT_FILE = Path(service_account_file)
+else:
+    # 2. Kalau tidak ada, cari di folder project/gcp_credential
+    CREDENTIALS_DIR = Path(__file__).parent / "gcp_credential"
+    SERVICE_ACCOUNT_FILE = next(CREDENTIALS_DIR.glob("*.json"), None)
 
+if not SERVICE_ACCOUNT_FILE or not SERVICE_ACCOUNT_FILE.exists():
+    raise FileNotFoundError(
+        f"Service Account JSON tidak ditemukan.\n"
+        f"Set environment variable GOOGLE_APPLICATION_CREDENTIALS atau taruh file di: {Path(__file__).parent/'gcp_credential'}"
+    )
+
+# Set env supaya dipakai google-cloud library
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(SERVICE_ACCOUNT_FILE)
 
 with open(SERVICE_ACCOUNT_FILE, "r", encoding="utf-8") as f:
